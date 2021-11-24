@@ -1,3 +1,5 @@
+from threading import Thread, Event
+
 import telebot
 from decouple import config
 from flask import Flask, request, Response
@@ -6,13 +8,12 @@ TOKEN = config("TOKEN")
 CHAT_ID = config("CHAT_ID")
 
 app = Flask(__name__)
-
 bot = telebot.TeleBot(TOKEN)
-
 
 @bot.message_handler(commands=["start", "help"])
 def send_welcome(message):
-    bot.reply_to(message, "Hey there")
+    CHAT_ID = message.chat.id
+    bot.reply_to(message, "Hey there, I will start sending notifications to you")
 
 
 @bot.message_handler(commands=["ping"])
@@ -21,7 +22,6 @@ def send_response(message):
 
 
 @app.route("/api/webhook", methods=["POST"])
-@bot.message_handler(func=lambda m: True)
 def echo_all():
     bot.send_message(CHAT_ID, f'{request.json["message"]}\n{request.json["url"]}')
     return None
